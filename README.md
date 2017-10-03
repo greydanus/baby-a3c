@@ -13,7 +13,7 @@ About
 
 _Make things as simple as possible, but not simpler._
 
-|			            | Breakout-v0   | Pong-v0       | SpaceInvaders-v0  |
+|			                        | Breakout-v0   | Pong-v0       | SpaceInvaders-v0  |
 | -------------                     | :------------:| :------------:| :------------:    |
 | Mean episode rewards @ 40M frames | 55 ± 10     | 18 ± 1      | 27 ± 3          |
 
