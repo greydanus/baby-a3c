@@ -24,5 +24,5 @@ Dependencies
 --------
  * Python 2.7 or 3.6
  * NumPy
- * SciPy: just for a single line...you could write a workaround
+ * SciPy: just on two lines -> workarounds possible
  * [PyTorch](http://pytorch.org/): easier to write, understand, and debug than TensorFlow :)
