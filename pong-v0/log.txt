@@ -819,4 +819,3 @@ time 19h 04m 35s, episodes 31582, frames 80556656, run epr 18.32, run loss -32.4
 time 19h 05m 55s, episodes 31620, frames 80652024, run epr 18.35, run loss -32.77
 time 19h 07m 20s, episodes 31660, frames 80756208, run epr 18.41, run loss -31.83
 time 19h 08m 43s, episodes 31697, frames 80848264, run epr 18.42, run loss -32.63
-time 00h 01m 05s, episodes 30001, frames 2522, run epr 0.39, run loss -0.93

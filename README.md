@@ -13,6 +13,12 @@ About
 
 _Make things as simple as possible, but not simpler._
 
+| Environment      | Mean episode rewards @ 40M frames |
+| -------------    | -------------                     |
+| Breakout-v0      | 50-70                             |
+| Pong-v0          | 18+                               |
+| SpaceInvaders-v0 | 25-30                             |
+
 Frustrated by the number of deep RL implementations that are clunky and opaque? In this repo, I've stripped a [high-performance A3C model](https://github.com/ikostrikov/pytorch-a3c) down to its bare essentials. Everything you'll need is contained in 180 lines...
 	
  * If you are trying to **learn deep RL**, the code is compact, readable, and commented

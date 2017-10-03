@@ -987,5 +987,3 @@ time 19h 07m 48s, episodes 57059, frames 82222664, run epr 73.86, run loss 149.1
 time 19h 09m 09s, episodes 57105, frames 82326488, run epr 71.27, run loss 136.12
 time 19h 10m 27s, episodes 57149, frames 82427336, run epr 71.13, run loss 143.87
 time 19h 11m 44s, episodes 57191, frames 82520912, run epr 71.27, run loss 147.72
-time 00h 01m 12s, episodes 50001, frames 2833, run epr 1.72, run loss 8.94
-time 00h 01m 07s, episodes 50001, frames 2623, run epr 1.65, run loss 2.32
