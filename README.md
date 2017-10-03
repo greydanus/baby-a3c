@@ -13,13 +13,12 @@ About
 
 _Make things as simple as possible, but not simpler._
 
-I'm frustrated by the number of deep RL implementations that are clunky and opaque. In this repo, I've stripped a [high-performance A3C model](https://github.com/ikostrikov/pytorch-a3c) down to its bare essentials. Everything you'll need is contained in 180 lines...
-	* If you are trying to **learn deep RL**, the code is compact, readable, and commented
-	* If you want **quick results**, I've included pretrained models
-	* If **something goes wrong**, there's not a mountain of code to debug
-	* If you want to **try something new**, this is a simple and strong baseline
-
-Star or link to this repo if you find it useful.
+Frustrated by the number of deep RL implementations that are clunky and opaque? In this repo, I've stripped a [high-performance A3C model](https://github.com/ikostrikov/pytorch-a3c) down to its bare essentials. Everything you'll need is contained in 180 lines...
+	
+ * If you are trying to **learn deep RL**, the code is compact, readable, and commented
+ * If you want **quick results**, I've included pretrained models
+ * If **something goes wrong**, there's not a mountain of code to debug
+ * If you want to **try something new**, this is a simple and strong baseline
 
 Dependencies
 --------
