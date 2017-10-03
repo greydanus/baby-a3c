@@ -13,8 +13,8 @@ About
 
 _Make things as simple as possible, but not simpler._
 
-| Environment                       | Breakout-v0   | Pong-v0       | SpaceInvaders-v0  |
-| -------------                     | ------------- | ------------- | -------------     |
+|			            | Breakout-v0   | Pong-v0       | SpaceInvaders-v0  |
+| -------------                     | :------------:| :------------:| :------------:    |
 | Mean episode rewards @ 40M frames | 50-70         | 18+           | 25-30             |
 
 Frustrated by the number of deep RL implementations that are clunky and opaque? In this repo, I've stripped a [high-performance A3C model](https://github.com/ikostrikov/pytorch-a3c) down to its bare essentials. Everything you'll need is contained in 180 lines...
