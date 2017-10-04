@@ -87,7 +87,7 @@ torch.manual_seed(args.seed)
 shared_model = NNPolicy(channels=1, num_actions=args.num_actions).share_memory()
 shared_optimizer = SharedAdam(shared_model.parameters(), lr=args.lr)
 
-info = {k : torch.zeros(1).share_memory_() for k in ['run_epr', 'run_loss', 'episodes', 'frames']}
+info = {k : torch.DoubleTensor([0]).share_memory_() for k in ['run_epr', 'run_loss', 'episodes', 'frames']}
 info['frames'] += shared_model.try_load(args.save_dir)
 if info['frames'][0] is 0: printlog(args,'', end='', mode='w') # clear log file
 
