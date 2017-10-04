@@ -21,16 +21,16 @@ About
 
 _Make things as simple as possible, but not simpler._
 
-|			                        | Breakout-v0   | Pong-v0       | SpaceInvaders-v0  |
-| -------------                     | :------------:| :------------:| :------------:    |
-| Mean episode rewards @ 40M frames | 55 ± 10     | 18 ± 1      | 27 ± 3          |
-
 Frustrated by the number of deep RL implementations that are clunky and opaque? In this repo, I've stripped a [high-performance A3C model](https://github.com/ikostrikov/pytorch-a3c) down to its bare essentials. Everything you'll need is contained in 180 lines...
 	
  * If you are trying to **learn deep RL**, the code is compact, readable, and commented
  * If you want **quick results**, I've included pretrained models
  * If **something goes wrong**, there's not a mountain of code to debug
  * If you want to **try something new**, this is a simple and strong baseline
+
+|			                        | Breakout-v0   | Pong-v0       | SpaceInvaders-v0  |
+| -------------                     | :------------:| :------------:| :------------:    |
+| Mean episode rewards @ 40M frames | 55 ± 10     | 18 ± 1      | 27 ± 3          |
 
 Dependencies
 --------
