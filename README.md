@@ -8,6 +8,14 @@ Results for less than a day on a 980 Ti (no CUDA...yet):
 ![pong-v0.gif](pong-v0/pong-v0.gif)
 ![spaceinvaders-v0.gif](spaceinvaders-v0/spaceinvaders-v0.gif)
 
+Usage
+--------
+
+Imagine you want to train this agent on OpenAI's "Breakout-v0" environment:
+ * To train: `python baby-a3c.py --env Breakout-v0`
+ * To test: `python baby-a3c.py --env Breakout-v0 --test True`
+ * To render: `python baby-a3c.py --env Breakout-v0 --render True`
+
 About
 --------
 
