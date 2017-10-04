@@ -11,7 +11,7 @@ Results for less than a day on a 980 Ti (no CUDA...yet):
 Usage
 --------
 
-Imagine you want to train this agent on OpenAI's "Breakout-v0" environment:
+If you're working on OpenAI's "Breakout-v0" environment:
  * To train: `python baby-a3c.py --env Breakout-v0`
  * To test: `python baby-a3c.py --env Breakout-v0 --test True`
  * To render: `python baby-a3c.py --env Breakout-v0 --render True`
