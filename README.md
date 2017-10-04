@@ -11,7 +11,7 @@ Results after training on 40M frames:
 Usage
 --------
 
-If you're working on OpenAI's "Breakout-v0" environment:
+If you're working on OpenAI's [Breakout-v0](https://gym.openai.com/envs/Breakout-v0/) environment:
  * To train: `python baby-a3c.py --env Breakout-v0`
  * To test: `python baby-a3c.py --env Breakout-v0 --test True`
  * To render: `python baby-a3c.py --env Breakout-v0 --render True`
