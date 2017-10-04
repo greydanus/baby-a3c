@@ -2,7 +2,7 @@ Baby A3C: solving Atari environments in 180 lines
 =======
 Sam Greydanus | October 2017 | MIT License
 
-Results for less than a day on a 980 Ti (no CUDA...yet):
+Results after training on 40M frames:
 
 ![breakout-v0.gif](breakout-v0/breakout-v0.gif)
 ![pong-v0.gif](pong-v0/pong-v0.gif)
