@@ -80,7 +80,7 @@ class SharedAdam(torch.optim.Adam): # extend a pytorch optimizer so it shares gr
                 for p in group['params']:
                     if p.grad is None: continue
                     self.state[p]['shared_steps'] += 1
-                    self.state[p]['step'] = self.state[p]['shared_steps'][0] - 1
+                    self.state[p]['step'] = self.state[p]['shared_steps'][0] - 1 # there's a "step += 1" later
             super.step(closure)
 
 torch.manual_seed(args.seed)
@@ -88,8 +88,8 @@ shared_model = NNPolicy(channels=1, num_actions=args.num_actions).share_memory()
 shared_optimizer = SharedAdam(shared_model.parameters(), lr=args.lr)
 
 info = {k : torch.zeros(1).share_memory_() for k in ['run_epr', 'run_loss', 'episodes', 'frames']}
-info['episodes'] += shared_model.try_load(args.save_dir)
-if info['episodes'][0] is 0: printlog(args,'', end='', mode='w') # clear log file
+info['frames'] += shared_model.try_load(args.save_dir)
+if info['frames'][0] is 0: printlog(args,'', end='', mode='w') # clear log file
 
 def train(rank, args, info):
     env = gym.make(args.env) # make a local (unshared) environment
@@ -100,16 +100,15 @@ def train(rank, args, info):
     start_time = last_disp_time = time.time()
     episode_length, epr, eploss, done  = 0, 0, 0, True # bookkeeping
 
-    while info['frames'][0] < 4e7: # stopping point on openai baselines
-
+    while info['frames'][0] <= 4e7: # stopping point for openai baselines is at 40M frames
         model.load_state_dict(shared_model.state_dict()) # sync with shared model
+
         cx = Variable(torch.zeros(1, 256)) if done else Variable(cx.data) # lstm memory
         hx = Variable(torch.zeros(1, 256)) if done else Variable(hx.data) # lstm activation
         values, logps, actions, rewards = [], [], [], [] # save values for computing gradientss
 
         for step in range(args.lstm_steps):
             episode_length += 1
-
             value, logit, (hx, cx) = model((Variable(state.view(1,1,80,80)), (hx, cx)))
             logp = F.log_softmax(logit)
 
@@ -120,11 +119,17 @@ def train(rank, args, info):
             state = torch.Tensor(prepro(state))
             reward = np.clip(reward, -1, 1) ; epr += reward
             done = done or episode_length >= 1e4 # keep agent from playing one episode too long
+            
+            info['frames'] += 1
+            if int(info['frames'][0]) % 2e6 == 0: # maybe save model
+                printlog(args, '\n\tstep {:.0f}: saved model\n'.format(info['frames'][0]))
+                torch.save({'state_dict': shared_model.state_dict()},
+                    args.save_dir + 'model.{:.0f}.tar'.format(info['frames'][0]))
 
-            if done: # update shared data. maybe print info and save model.
-                info['frames'] += episode_length ; info['episodes'] += 1
-                info['run_epr'] = 0.98 * info['run_epr'].add_(0.02 * epr)
-                info['run_loss'] = 0.98 * info['run_loss'].add_(0.02 * eploss)
+            if done: # update shared data. maybe print info.
+                info['episodes'] += 1 ; interp = 1 if info['episodes'][0] == 1 else 0.03
+                info['run_epr'] = (1-interp) * info['run_epr'].add_(interp * epr)
+                info['run_loss'] = (1-interp) * info['run_loss'].add_(interp * eploss)
 
                 if rank ==0 and time.time() - last_disp_time > 60: # print info ~ every minute
                     elapsed = time.strftime("%Hh %Mm %Ss", time.gmtime(time.time() - start_time))
@@ -132,11 +137,6 @@ def train(rank, args, info):
                         .format(elapsed, info['episodes'][0], info['frames'][0], info['run_epr'][0],
                         info['run_loss'][0]))
                     last_disp_time = time.time()
-
-                if int(info['episodes'][0]) % 10000 == 0:
-                    printlog(args, '\n\tstep {:.0f}: saved model\n'.format(info['episodes'][0]))
-                    torch.save({'state_dict': shared_model.state_dict()},
-                        args.save_dir + 'model.{:.0f}.tar'.format(info['episodes'][0]))
 
                 episode_length, epr, eploss = 0, 0, 0
                 state = torch.Tensor(prepro(env.reset()))
