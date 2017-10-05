@@ -32,7 +32,7 @@ Frustrated by the number of deep RL implementations that are clunky and opaque? 
 | -------------                     | :------------:| :------------:| :------------:    |
 | *Mean episode rewards @ 40M frames | 62 ± 2     | 20 ± 0.5      | 30 ± 1          |
 
-* these scores improve with further training
+   * these scores improve with further training
 
 Dependencies
 --------
