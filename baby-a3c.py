@@ -22,6 +22,7 @@ parser.add_argument('--lr', default=1e-4, type=int, help='learning rate')
 parser.add_argument('--seed', default=0, type=int, help='seed random # generators (for reproducibility)')
 parser.add_argument('--gamma', default=0.99, type=float, help='discount for gamma-discounted rewards')
 parser.add_argument('--tau', default=1.0, type=float, help='discount for generalized advantage estimation')
+parser.add_argument('--horizon', default=0.02, type=float, help='horizon for running averages')
 args = parser.parse_args()
 
 args.save_dir = '{}/'.format(args.env.lower()) # keep the directory structure simple
@@ -117,7 +118,7 @@ def train(rank, args, info):
             if args.render: env.render()
 
             state = torch.Tensor(prepro(state)) ; epr += reward
-            reward = np.tanh(reward/2)*2 # custom reward 'clipping'
+            reward = np.tanh(reward/2)*2 # soft reward 'clipping'
             done = done or episode_length >= 1e4 # keep agent from playing one episode too long
             
             info['frames'] += 1
@@ -127,8 +128,7 @@ def train(rank, args, info):
                     args.save_dir + 'model.{:.0f}.tar'.format(info['frames'][0]))
 
             if done: # update shared data. maybe print info.
-                print(epr)
-                info['episodes'] += 1 ; interp = 1 if info['episodes'][0] == 1 else 0.03
+                info['episodes'] += 1 ; interp = 1 if info['episodes'][0] == 1 else args.horizon
                 info['run_epr'].mul_(1-interp).add_(interp * epr)
                 info['run_loss'].mul_(1-interp).add_(interp * epr)
 

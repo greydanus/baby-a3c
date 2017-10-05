@@ -30,7 +30,7 @@ Frustrated by the number of deep RL implementations that are clunky and opaque? 
 
 |			                        | Breakout-v0   | Pong-v0       | SpaceInvaders-v0  |
 | -------------                     | :------------:| :------------:| :------------:    |
-| *Mean episode rewards @ 40M frames | 270 ± 50     | 20 ± 0.5      | 500 ± 100         |
+| *Mean episode rewards @ 40M frames | 250 ± 50     | 20.3 ± 0.5      | 550 ± 100         |
 
 \* these scores improve with further training
 
