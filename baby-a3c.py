@@ -116,8 +116,8 @@ def train(rank, args, info):
             state, reward, done, _ = env.step(action.numpy()[0])
             if args.render: env.render()
 
-            state = torch.Tensor(prepro(state))
-            reward = np.clip(reward, -1, 1) ; epr += reward
+            state = torch.Tensor(prepro(state)) ; epr += reward
+            reward = np.tanh(reward/2)*2 # custom reward 'clipping'
             done = done or episode_length >= 1e4 # keep agent from playing one episode too long
             
             info['frames'] += 1
@@ -127,9 +127,10 @@ def train(rank, args, info):
                     args.save_dir + 'model.{:.0f}.tar'.format(info['frames'][0]))
 
             if done: # update shared data. maybe print info.
+                print(epr)
                 info['episodes'] += 1 ; interp = 1 if info['episodes'][0] == 1 else 0.03
-                info['run_epr'] = (1-interp) * info['run_epr'].add_(interp * epr)
-                info['run_loss'] = (1-interp) * info['run_loss'].add_(interp * eploss)
+                info['run_epr'].mul_(1-interp).add_(interp * epr)
+                info['run_loss'].mul_(1-interp).add_(interp * epr)
 
                 if rank ==0 and time.time() - last_disp_time > 60: # print info ~ every minute
                     elapsed = time.strftime("%Hh %Mm %Ss", time.gmtime(time.time() - start_time))

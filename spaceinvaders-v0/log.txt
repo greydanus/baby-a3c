@@ -609,3 +609,4 @@ time 10h 22m 36s, episodes 47060, frames 39999162, run epr 26.43, run loss 45.52
 
 	step 40000000: saved model
 
+time 00h 01m 07s, episodes 3, frames 40003015, run epr 1.78, run loss 3.25
