@@ -25,8 +25,8 @@ parser.add_argument('--tau', default=1.0, type=float, help='discount for general
 args = parser.parse_args()
 
 args.save_dir = '{}/'.format(args.env.lower()) # keep the directory structure simple
-if args.test or args.render:
-    args.processes = 1 ; args.lr = 0 # don't train in test and render modes
+if args.render:  args.processes = 1 ; args.test = True # render mode -> test mode w one process
+if args.test:  args.lr = 0 # don't train in render mode
 args.num_actions = gym.make(args.env).action_space.n # get the action space of this game
 os.makedirs(args.save_dir) if not os.path.exists(args.save_dir) else None # make dir to save models etc.
 
@@ -100,7 +100,7 @@ def train(rank, args, info):
     start_time = last_disp_time = time.time()
     episode_length, epr, eploss, done  = 0, 0, 0, True # bookkeeping
 
-    while info['frames'][0] <= 4e7: # stopping point for openai baselines is at 40M frames
+    while info['frames'][0] <= 4e7 or args.test: # stopping point for openai baselines is at 40M frames
         model.load_state_dict(shared_model.state_dict()) # sync with shared model
 
         cx = Variable(torch.zeros(1, 256)) if done else Variable(cx.data) # lstm memory
