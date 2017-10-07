@@ -28,11 +28,12 @@ Frustrated by the number of deep RL implementations that are clunky and opaque? 
  * If **something goes wrong**, there's not a mountain of code to debug
  * If you want to **try something new**, this is a simple and strong baseline
 
-|			                        | Breakout-v0   | Pong-v0       | SpaceInvaders-v0  |
-| -------------                     | :------------:| :------------:| :------------:    |
-| *Mean episode rewards @ 40M frames | 250 ± 50     | 20.3 ± 0.5      | 550 ± 100         |
+|			                        | Breakout-v0   | Pong-v0       | SpaceInvaders-v0  | MsPacman-v0  |
+| -------------                     | :------------:| :------------:| :------------:    | :------------:  |
+| *Mean episode rewards @ 40M frames | 240 ± 50     | 20.1 ± 0.5      | 530 ± 20        | 510 ± 20        |
+| *Mean episode rewards @ 80M frames | 330 ± 50     | 20.0 ± 0.5      | 460 ± 20        | 600 ± 20        |
 
-\* these scores improve with further training
+\*these scores improve with further training
 
 Dependencies
 --------

@@ -21,8 +21,8 @@ parser.add_argument('--lstm_steps', default=20, type=int, help='steps to train L
 parser.add_argument('--lr', default=1e-4, type=int, help='learning rate')
 parser.add_argument('--seed', default=0, type=int, help='seed random # generators (for reproducibility)')
 parser.add_argument('--gamma', default=0.99, type=float, help='discount for gamma-discounted rewards')
-parser.add_argument('--tau', default=1.0, type=float, help='discount for generalized advantage estimation')
-parser.add_argument('--horizon', default=0.02, type=float, help='horizon for running averages')
+parser.add_argument('--tau', default=.99, type=float, help='discount for generalized advantage estimation')
+parser.add_argument('--horizon', default=0.98, type=float, help='horizon for running averages')
 args = parser.parse_args()
 
 args.save_dir = '{}/'.format(args.env.lower()) # keep the directory structure simple
@@ -31,7 +31,7 @@ if args.test:  args.lr = 0 # don't train in render mode
 args.num_actions = gym.make(args.env).action_space.n # get the action space of this game
 os.makedirs(args.save_dir) if not os.path.exists(args.save_dir) else None # make dir to save models etc.
 
-discount = lambda x, gamma: lfilter([1],[1,-gamma],x[::-1])[::-1]
+discount = lambda x, gamma: lfilter([1],[1,-gamma],x[::-1])[::-1] # discounted rewards one liner
 prepro = lambda img: imresize(img[35:195].mean(2), (80,80)).astype(np.float32).reshape(1,80,80)/255.
 
 def printlog(args, s, end='\n', mode='a'):
@@ -45,7 +45,7 @@ class NNPolicy(torch.nn.Module): # an actor-critic neural network
         self.conv3 = nn.Conv2d(32, 32, 3, stride=2, padding=1)
         self.conv4 = nn.Conv2d(32, 32, 3, stride=2, padding=1)
         self.lstm = nn.LSTMCell(32 * 5 * 5, 256)
-        self.val_func, self.pol_func = nn.Linear(256, 1), nn.Linear(256, num_actions)
+        self.critic_linear, self.actor_linear = nn.Linear(256, 1), nn.Linear(256, num_actions)
 
     def forward(self, inputs):
         inputs, (hx, cx) = inputs
@@ -55,14 +55,14 @@ class NNPolicy(torch.nn.Module): # an actor-critic neural network
         x = F.elu(self.conv4(x))
         x = x.view(-1, 32 * 5 * 5)
         hx, cx = self.lstm(x, (hx, cx))
-        return self.val_func(hx), self.pol_func(hx), (hx, cx)
+        return self.critic_linear(hx), self.actor_linear(hx), (hx, cx)
 
     def try_load(self, save_dir):
         paths = glob.glob(save_dir + '*.tar') ; step = 0
         if len(paths) > 0:
             ckpts = [int(s.split('.')[-2]) for s in paths]
             ix = np.argmax(ckpts) ; step = ckpts[ix]
-            self.load_state_dict(torch.load(paths[ix])['state_dict'])
+            self.load_state_dict(torch.load(paths[ix]))
         print("\tno saved models") if step is 0 else print("\tloaded model: {}".format(paths[ix]))
         return step
 
@@ -86,11 +86,12 @@ class SharedAdam(torch.optim.Adam): # extend a pytorch optimizer so it shares gr
 
 torch.manual_seed(args.seed)
 shared_model = NNPolicy(channels=1, num_actions=args.num_actions).share_memory()
-shared_optimizer = SharedAdam(shared_model.parameters(), lr=args.lr)
 
-info = {k : torch.DoubleTensor([0]).share_memory_() for k in ['run_epr', 'run_loss', 'episodes', 'frames']}
-info['frames'] += shared_model.try_load(args.save_dir)
+info = {k : torch.DoubleTensor([0]).share_memory_() for k in ['run_epr', 'run_loss', 'episodes', 'frames', 'lr']}
+info['frames'] += shared_model.try_load(args.save_dir)*1e6
 if info['frames'][0] is 0: printlog(args,'', end='', mode='w') # clear log file
+info['lr'].add_(args.lr)
+shared_optimizer = SharedAdam(shared_model.parameters(), lr=info['lr'])
 
 def train(rank, args, info):
     env = gym.make(args.env) # make a local (unshared) environment
@@ -101,11 +102,11 @@ def train(rank, args, info):
     start_time = last_disp_time = time.time()
     episode_length, epr, eploss, done  = 0, 0, 0, True # bookkeeping
 
-    while info['frames'][0] <= 4e7 or args.test: # stopping point for openai baselines is at 40M frames
+    while info['frames'][0] <= 8e7 or args.test: # openai baselines uses 40M frames...we'll use 80M
         model.load_state_dict(shared_model.state_dict()) # sync with shared model
 
-        cx = Variable(torch.zeros(1, 256)) if done else Variable(cx.data) # lstm memory
-        hx = Variable(torch.zeros(1, 256)) if done else Variable(hx.data) # lstm activation
+        cx = Variable(torch.zeros(1, 256)) if done else Variable(cx.data) # lstm memory vector
+        hx = Variable(torch.zeros(1, 256)) if done else Variable(hx.data) # lstm activation vector
         values, logps, actions, rewards = [], [], [], [] # save values for computing gradientss
 
         for step in range(args.lstm_steps):
@@ -118,25 +119,25 @@ def train(rank, args, info):
             if args.render: env.render()
 
             state = torch.Tensor(prepro(state)) ; epr += reward
-            reward = np.tanh(reward/2)*2 # soft reward 'clipping'
+            reward = np.clip(reward, -1, 1) # reward
             done = done or episode_length >= 1e4 # keep agent from playing one episode too long
             
-            info['frames'] += 1
-            if int(info['frames'][0]) % 2e6 == 0: # maybe save model
-                printlog(args, '\n\tstep {:.0f}: saved model\n'.format(info['frames'][0]))
-                torch.save({'state_dict': shared_model.state_dict()},
-                    args.save_dir + 'model.{:.0f}.tar'.format(info['frames'][0]))
+            info['frames'] += 1 ; num_frames = int(info['frames'][0])
+            if num_frames % 2e6 == 0: # save every 2M frames
+                printlog(args, '\n\t{:.0f}M frames: saved model\n'.format(num_frames/1e6))
+                torch.save(shared_model.state_dict(), args.save_dir+'model.{:.0f}.tar'.format(num_frames/1e6))
+                info['lr'].mul_(.9)
 
             if done: # update shared data. maybe print info.
-                info['episodes'] += 1 ; interp = 1 if info['episodes'][0] == 1 else args.horizon
+                info['episodes'] += 1
+                interp = 1 if info['episodes'][0] == 1 else 1 - args.horizon
                 info['run_epr'].mul_(1-interp).add_(interp * epr)
-                info['run_loss'].mul_(1-interp).add_(interp * epr)
+                info['run_loss'].mul_(1-interp).add_(interp * eploss)
 
                 if rank ==0 and time.time() - last_disp_time > 60: # print info ~ every minute
                     elapsed = time.strftime("%Hh %Mm %Ss", time.gmtime(time.time() - start_time))
                     printlog(args, 'time {}, episodes {:.0f}, frames {:.0f}, run epr {:.2f}, run loss {:.2f}'
-                        .format(elapsed, info['episodes'][0], info['frames'][0], info['run_epr'][0],
-                        info['run_loss'][0]))
+                        .format(elapsed, info['episodes'][0], num_frames, info['run_epr'][0], info['run_loss'][0]))
                     last_disp_time = time.time()
 
                 episode_length, epr, eploss = 0, 0, 0
