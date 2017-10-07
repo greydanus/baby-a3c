@@ -86,12 +86,11 @@ class SharedAdam(torch.optim.Adam): # extend a pytorch optimizer so it shares gr
 
 torch.manual_seed(args.seed)
 shared_model = NNPolicy(channels=1, num_actions=args.num_actions).share_memory()
+shared_optimizer = SharedAdam(shared_model.parameters(), lr=args.lr)
 
-info = {k : torch.DoubleTensor([0]).share_memory_() for k in ['run_epr', 'run_loss', 'episodes', 'frames', 'lr']}
+info = {k : torch.DoubleTensor([0]).share_memory_() for k in ['run_epr', 'run_loss', 'episodes', 'frames']}
 info['frames'] += shared_model.try_load(args.save_dir)*1e6
 if info['frames'][0] is 0: printlog(args,'', end='', mode='w') # clear log file
-info['lr'].add_(args.lr)
-shared_optimizer = SharedAdam(shared_model.parameters(), lr=info['lr'])
 
 def train(rank, args, info):
     env = gym.make(args.env) # make a local (unshared) environment
@@ -126,7 +125,6 @@ def train(rank, args, info):
             if num_frames % 2e6 == 0: # save every 2M frames
                 printlog(args, '\n\t{:.0f}M frames: saved model\n'.format(num_frames/1e6))
                 torch.save(shared_model.state_dict(), args.save_dir+'model.{:.0f}.tar'.format(num_frames/1e6))
-                info['lr'].mul_(.9)
 
             if done: # update shared data. maybe print info.
                 info['episodes'] += 1
