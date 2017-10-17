@@ -28,16 +28,24 @@ Frustrated by the number of deep RL implementations that are clunky and opaque? 
  * If **something goes wrong**, there's not a mountain of code to debug
  * If you want to **try something new**, this is a simple and strong baseline
 
-|			                        | Breakout-v0   | Pong-v0       | SpaceInvaders-v0  | MsPacman-v0  |
-| -------------                     | :------------:| :------------:| :------------:    | :------------:  |
-| *Mean episode rewards @ 40M frames | 240 ± 50     | 20.1 ± 0.5      | 530 ± 20        | 510 ± 20        |
-| *Mean episode rewards @ 80M frames | 330 ± 50     | 20.0 ± 0.5      | 460 ± 20        | 600 ± 20        |
+|			                         | Breakout-v0  | Pong-v0       | SpaceInvaders-v0  |
+| -------------                      |:------------:| :------------:| :------------:    |
+| *Mean episode rewards @ 40M frames | 290 ± 10     | 20.2 ± 0.1    |   425 ± 10        |
+| *Mean episode rewards @ 80M frames | 320 ± 10     | 20.2 ± 0.1    |   425 ± 10        |
 
-\*these scores improve with further training
+\*same (default) hyperparameters across all environments
 
-Dependencies
+Environments that work
 --------
+_(Use `pip freeze` to check your environment settings)_
+ * Mac OSX or Linux
  * Python 2.7 or 3.6
- * NumPy
- * SciPy: just on two lines -> workarounds possible
- * [PyTorch](http://pytorch.org/): easier to write, understand, and debug than TensorFlow :)
+ * NumPy 1.13.1
+ * Gym 0.9.4
+ * SciPy 0.19.1 (just on two lines -> workarounds possible)
+ * [PyTorch 0.2.0](http://pytorch.org/)
+
+Known issues
+--------
+ * Python 2.7 + PyTorch 0.2.0 + Mac OSX produces a **segfault**
+   * workaround: revert to PyTorch 0.1.12 (`pip2 install http://download.pytorch.org/whl/torch-0.1.12.post2-cp27-none-macosx_10_7_x86_64.whl`)

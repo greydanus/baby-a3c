@@ -18,11 +18,11 @@ parser.add_argument('--processes', default=20, type=int, help='number of process
 parser.add_argument('--render', default=False, type=bool, help='renders the atari environment')
 parser.add_argument('--test', default=False, type=bool, help='test mode sets lr=0, chooses most likely actions')
 parser.add_argument('--lstm_steps', default=20, type=int, help='steps to train LSTM over')
-parser.add_argument('--lr', default=1e-4, type=int, help='learning rate')
-parser.add_argument('--seed', default=0, type=int, help='seed random # generators (for reproducibility)')
+parser.add_argument('--lr', default=1e-4, type=float, help='learning rate')
+parser.add_argument('--seed', default=1, type=int, help='seed random # generators (for reproducibility)')
 parser.add_argument('--gamma', default=0.99, type=float, help='discount for gamma-discounted rewards')
-parser.add_argument('--tau', default=.99, type=float, help='discount for generalized advantage estimation')
-parser.add_argument('--horizon', default=0.98, type=float, help='horizon for running averages')
+parser.add_argument('--tau', default=1.0, type=float, help='discount for generalized advantage estimation')
+parser.add_argument('--horizon', default=0.99, type=float, help='horizon for running averages')
 args = parser.parse_args()
 
 args.save_dir = '{}/'.format(args.env.lower()) # keep the directory structure simple
@@ -49,12 +49,9 @@ class NNPolicy(torch.nn.Module): # an actor-critic neural network
 
     def forward(self, inputs):
         inputs, (hx, cx) = inputs
-        x = F.elu(self.conv1(inputs))
-        x = F.elu(self.conv2(x))
-        x = F.elu(self.conv3(x))
-        x = F.elu(self.conv4(x))
-        x = x.view(-1, 32 * 5 * 5)
-        hx, cx = self.lstm(x, (hx, cx))
+        x = F.elu(self.conv1(inputs)) ; x = F.elu(self.conv2(x))
+        x = F.elu(self.conv3(x)) ; x = F.elu(self.conv4(x))
+        hx, cx = self.lstm(x.view(-1, 32 * 5 * 5), (hx, cx))
         return self.critic_linear(hx), self.actor_linear(hx), (hx, cx)
 
     def try_load(self, save_dir):
@@ -90,7 +87,7 @@ shared_optimizer = SharedAdam(shared_model.parameters(), lr=args.lr)
 
 info = {k : torch.DoubleTensor([0]).share_memory_() for k in ['run_epr', 'run_loss', 'episodes', 'frames']}
 info['frames'] += shared_model.try_load(args.save_dir)*1e6
-if info['frames'][0] is 0: printlog(args,'', end='', mode='w') # clear log file
+if int(info['frames'][0]) == 0: printlog(args,'', end='', mode='w') # clear log file
 
 def train(rank, args, info):
     env = gym.make(args.env) # make a local (unshared) environment
@@ -134,8 +131,8 @@ def train(rank, args, info):
 
                 if rank ==0 and time.time() - last_disp_time > 60: # print info ~ every minute
                     elapsed = time.strftime("%Hh %Mm %Ss", time.gmtime(time.time() - start_time))
-                    printlog(args, 'time {}, episodes {:.0f}, frames {:.0f}, run epr {:.2f}, run loss {:.2f}'
-                        .format(elapsed, info['episodes'][0], num_frames, info['run_epr'][0], info['run_loss'][0]))
+                    printlog(args, 'time {}, episodes {:.0f}, frames {:.1f}M, run epr {:.2f}, run loss {:.2f}'
+                        .format(elapsed, info['episodes'][0], num_frames/1e6, info['run_epr'][0], info['run_loss'][0]))
                     last_disp_time = time.time()
 
                 episode_length, epr, eploss = 0, 0, 0
