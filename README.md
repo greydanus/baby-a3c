@@ -27,6 +27,7 @@ Frustrated by the number of deep RL implementations that are clunky and opaque? 
  * If you want **quick results**, I've included pretrained models
  * If **something goes wrong**, there's not a mountain of code to debug
  * If you want to **try something new**, this is a simple and strong baseline
+ * Here's a [quick intro to A3C](https://goo.gl/Ub3vCY) that I wrote
 
 |			                         | Breakout-v0  | Pong-v0       | SpaceInvaders-v0  |
 | -------------                      |:------------:| :------------:| :------------:    |
