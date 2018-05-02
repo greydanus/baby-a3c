@@ -4,9 +4,9 @@ Sam Greydanus | October 2017 | MIT License
 
 Results after training on 40M frames:
 
-![breakout-v0.gif](breakout-v4/breakout-v4.gif)
-![pong-v0.gif](pong-v4/pong-v4.gif)
-![spaceinvaders-v0.gif](spaceinvaders-v4/spaceinvaders-v4.gif)
+![breakout-v4.gif](breakout-v4/breakout-v4.gif)
+![pong-v4.gif](pong-v4/pong-v4.gif)
+![spaceinvaders-v4.gif](spaceinvaders-v4/spaceinvaders-v4.gif)
 
 Usage
 --------
