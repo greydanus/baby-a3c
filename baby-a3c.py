@@ -69,13 +69,13 @@ class SharedAdam(torch.optim.Adam): # extend a pytorch optimizer so it shares gr
                 state['exp_avg'] = p.data.new().resize_as_(p.data).zero_().share_memory_()
                 state['exp_avg_sq'] = p.data.new().resize_as_(p.data).zero_().share_memory_()
                 
-        def step(self, closure=None):
-            for group in self.param_groups:
-                for p in group['params']:
-                    if p.grad is None: continue
-                    self.state[p]['shared_steps'] += 1
-                    self.state[p]['step'] = self.state[p]['shared_steps'][0] - 1 # a "step += 1"  comes later
-            super.step(closure)
+    def step(self, closure=None):
+        for group in self.param_groups:
+            for p in group['params']:
+                if p.grad is None: continue
+                self.state[p]['shared_steps'] += 1
+                self.state[p]['step'] = self.state[p]['shared_steps'][0] - 1 # a "step += 1"  comes later
+        super().step(closure)
 
 def cost_func(args, values, logps, actions, rewards):
     np_values = values.view(-1).data.numpy()
